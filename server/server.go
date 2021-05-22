@@ -219,7 +219,13 @@ Starting Rainbow Road Server!
  
  `)
 
-	http.ListenAndServe(":9999", nil)
+	err := http.ListenAndServe(":9999", nil)
+
+	if err != nil {
+		log.Fatalf("Server exited with: %v", err)
+	}
 }
 
 //TODO log requests maybe?
+// Fix health check response
+// Add secret to deployment.yaml

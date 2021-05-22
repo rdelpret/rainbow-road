@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rainbow-road-api
+  labels:
+    app: rainbow-road
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: rainbow-road
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  template:
+    metadata:
+        labels:
+          app: rainbow-road
+    spec:
+      containers:
+        - name: rainbow-road
+          image: rainbow-road:latest
+          imagePullPolicy: Never
+          command:
+            - /bin/bash
+          args:
+            - -c
+            - server
+          #envFrom:
+          #  - secretRef:
+          #      name: github-token
+          ports:
+            - name: http
+              containerPort: 9999
+              protocol: TCP
+          livenessProbe:
+              httpGet:
+                path: /health
+                port: 9999
+          resources:
+            limits:
+              cpu: 100m
+              memory: 128Mi
+            requests:
+              cpu: 50m
+              memory: 64Mi
