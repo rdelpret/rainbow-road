@@ -226,6 +226,7 @@ Starting Rainbow Road Server!
 	}
 }
 
-//TODO log requests maybe?
+//TODO:
+// log requests maybe?
 // Fix health check response
 // Add secret to deployment.yaml
