@@ -202,5 +202,24 @@ func healthCheckHandler(w http.ResponseWriter, r *http.Request) {
 func main() {
 	http.HandleFunc("/stars", starsHandler)
 	http.HandleFunc("/health", healthCheckHandler)
+	fmt.Println(`
+
+Starting Rainbow Road Server!
+            .
+           ,O,
+          ,OOO,
+    'oooooOOOOOooooo'
+      'OOOOOOOOOOO'
+        'OOOOOOO'
+        OOOO'OOOO
+       OOO'   'OOO
+      O'         'O
+  
+ Listening on port: 9999
+ 
+ `)
+
 	http.ListenAndServe(":9999", nil)
 }
+
+//TODO log requests maybe?
