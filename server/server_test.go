@@ -31,23 +31,23 @@ func TestAssembleURL(t *testing.T) {
 func TestGetAuth(t *testing.T) {
 
 	//Set Env Var for test
-	originalToken, _ := os.LookupEnv("GIT_TOKEN")
+	originalToken, _ := os.LookupEnv("GITHUB_TOKEN")
 
-	err := os.Setenv("GIT_TOKEN", "test")
+	err := os.Setenv("GITHUB_TOKEN", "test")
 	assert.Nil(t, err)
 
 	token, err := getAuth()
 	assert.Nil(t, err)
 	assert.Equal(t, "test", token)
 
-	err = os.Unsetenv("GIT_TOKEN")
+	err = os.Unsetenv("GITHUB_TOKEN")
 	assert.Nil(t, err)
 
 	_, err = getAuth()
 
-	assert.EqualError(t, err, "WARNING: GIT_TOKEN environment variable not set. API requests to github will be rate limited")
+	assert.EqualError(t, err, "WARNING: GITHUB_TOKEN environment variable not set. API requests to github will be rate limited")
 
-	err = os.Setenv("GIT_TOKEN", originalToken)
+	err = os.Setenv("GITHUB_TOKEN", originalToken)
 	assert.Nil(t, err)
 
 }
@@ -203,7 +203,7 @@ func TestHealthCheckHandler(t *testing.T) {
 	handler.ServeHTTP(recorder, req)
 
 	assert.Equal(t, http.StatusOK, recorder.Code)
-	expected := "\"{\\\"status\\\" : \\\"green\\\"}\"\n"
+	expected := "\"{\\\"status\\\":\\\"green\\\"}\"\n"
 	assert.Equal(t, expected, recorder.Body.String())
 
 	// Test using wrong HTTP Method
