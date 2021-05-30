@@ -42,7 +42,7 @@ func validateRepos(repos []string) error {
 	var invalidRepos string = ""
 	for _, repo := range repos {
 		if !validateRepo(repo) {
-			invalidRepos += "Error: Invalid repo name " + repo + "\n"
+			invalidRepos += "Error: Invalid repo name " + repo + ". Hint: <org>/<repo-name>\n"
 		}
 	}
 	if invalidRepos != "" {

@@ -69,11 +69,11 @@ func TestValidateServerName(t *testing.T) {
 func TestValidateRepos(t *testing.T) {
 	repos := []string{"test", "foo", "baz"}
 	err := validateRepos(repos)
-	assert.EqualError(t, err, "Error: Invalid repo name test\nError: Invalid repo name foo\nError: Invalid repo name baz")
+	assert.EqualError(t, err, "Error: Invalid repo name test. Hint: <org>/<repo-name>\nError: Invalid repo name foo. Hint: <org>/<repo-name>\nError: Invalid repo name baz. Hint: <org>/<repo-name>")
 
 	repos = []string{"kubernetes/kubernetes", "foo", "baz"}
 	err = validateRepos(repos)
-	assert.EqualError(t, err, "Error: Invalid repo name foo\nError: Invalid repo name baz")
+	assert.EqualError(t, err, "Error: Invalid repo name foo. Hint: <org>/<repo-name>\nError: Invalid repo name baz. Hint: <org>/<repo-name>")
 
 	repos = []string{"kubernetes/kubernetes", "istio/istio"}
 	err = validateRepos(repos)
@@ -118,7 +118,7 @@ func TestRun(t *testing.T) {
 	repos = []string{"kuberneteskubernetes", "istio/istio"}
 	_, err = run(repos)
 	assert.NotNil(t, err)
-	assert.EqualError(t, err, "Error: Invalid repo name kuberneteskubernetes")
+	assert.EqualError(t, err, "Error: Invalid repo name kuberneteskubernetes. Hint: <org>/<repo-name>")
 
 	repos = []string{}
 	str, err = run(repos)
