@@ -17,6 +17,8 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
+// ----------------------- GITHUB REQUEST CODE -----------------------
+
 // Struct that represents a /stars request
 type Repos struct {
 	Repos []Repo `json:"repos"`
@@ -29,7 +31,6 @@ type Repo struct {
 	Error string
 }
 
-//TODO - only print this once on startup
 // helper function to pull a git token if it exists. Print warning if it doesnt
 func getAuth() (string, error) {
 	val, ok := os.LookupEnv("GITHUB_TOKEN")
@@ -51,25 +52,6 @@ func assembleURL(repoName string) (string, error) {
 	}
 
 	return base + api + repoName, nil
-}
-
-func logger(targetMux http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		start := time.Now()
-
-		targetMux.ServeHTTP(w, r)
-
-		// log request by who(IP address)
-		requesterIP := r.RemoteAddr
-
-		log.Printf(
-			"%-20s%-20s%-20s%-20v",
-			r.Method,
-			r.RequestURI,
-			requesterIP,
-			time.Since(start),
-		)
-	})
 }
 
 // Function to call github api and get star count
@@ -150,9 +132,12 @@ func GetStarsForRepos(repos Repos) Repos {
 		}(repo)
 	}
 	wg.Wait()
+
 	// return repos object with stars and errors after wg has finished
 	return repos
 }
+
+// --------------------------- SERVER CODE ---------------------------
 
 // HTTP route to handle stars requests
 func starsHandler(w http.ResponseWriter, r *http.Request) {
@@ -174,7 +159,6 @@ func starsHandler(w http.ResponseWriter, r *http.Request) {
 	// Read body
 	body, err := ioutil.ReadAll(r.Body)
 
-	// not sure how to get code coverage here
 	if err != nil {
 		http.Error(w, "Malformed Request.", http.StatusBadRequest)
 		log.Println(err)
@@ -198,10 +182,10 @@ func starsHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 
-	// send em on back
+	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(repos)
-
 	starsApiReq200.Inc()
+
 }
 
 // HTTP route to handle health checks
@@ -224,33 +208,43 @@ func healthCheckHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(`{"status":"green"}`)
 }
 
-var (
-	starsApiReqAll = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "api_requests_stars_ALL",
-		Help: "The total number of processed requests from the stars api",
-	})
-)
+// http logger middleware
+func httpLogger(targetMux http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
 
-var (
-	starsApiReq200 = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "api_requests_stars_200",
-		Help: "The total number of 200 requests from the stars api",
-	})
-)
+		targetMux.ServeHTTP(w, r)
+		requesterIP := r.RemoteAddr
 
-var (
-	githubApiReqAll = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "api_requests_github_all",
-		Help: "The total number of outgoing requests to github",
+		log.Printf(
+			"%-20s%-20s%-20s%-20v",
+			r.Method,
+			r.RequestURI,
+			requesterIP,
+			time.Since(start),
+		)
 	})
-)
+}
 
-var (
-	githubApiReq200 = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "api_requests_github_200",
-		Help: "The total number of 200 requests to github",
-	})
-)
+// --------------------------- PROM METRICS ---------------------------
+
+var starsApiReqAll = promauto.NewCounter(prometheus.CounterOpts{
+	Name: "api_requests_stars_ALL",
+	Help: "The total number of processed requests from the stars api"})
+
+var starsApiReq200 = promauto.NewCounter(prometheus.CounterOpts{
+	Name: "api_requests_stars_200",
+	Help: "The total number of 200 requests from the stars api"})
+
+var githubApiReqAll = promauto.NewCounter(prometheus.CounterOpts{
+	Name: "api_requests_github_all",
+	Help: "The total number of outgoing requests to github"})
+
+var githubApiReq200 = promauto.NewCounter(prometheus.CounterOpts{
+	Name: "api_requests_github_200",
+	Help: "The total number of 200 requests to github"})
+
+// ------------------------------ MAIN -------------------------------
 
 var gitToken, gitTokenErr = getAuth()
 
@@ -281,15 +275,15 @@ Starting Rainbow Road Server!
  
  `)
 
-	err := http.ListenAndServe(":9999", logger(mux))
+	err := http.ListenAndServe(":9999", httpLogger(mux))
 
 	if err != nil {
 		log.Fatalf("Server exited with: %v", err)
 	}
 }
 
-//TODO:
-// comment tests better
-// comment server better
-// impliment 206, bubble github 400 if all requests are denied
-// impliment faster hot relaod
+// things I would impliment if I had more time:
+// ============================================
+// metrics middleware
+// http timeouts
+// mock tests that have to make http calls

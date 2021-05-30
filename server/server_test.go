@@ -30,29 +30,36 @@ func TestAssembleURL(t *testing.T) {
 
 func TestGetAuth(t *testing.T) {
 
-	//Set Env Var for test
+	// Get original token so we can put it back after
 	originalToken, _ := os.LookupEnv("GITHUB_TOKEN")
 
+	// set token to test value
 	err := os.Setenv("GITHUB_TOKEN", "test")
 	assert.Nil(t, err)
 
+	// test that we can get the token
 	token, err := getAuth()
 	assert.Nil(t, err)
 	assert.Equal(t, "test", token)
 
+	// unset the test token
 	err = os.Unsetenv("GITHUB_TOKEN")
 	assert.Nil(t, err)
 
+	// assert we get the correct error message
 	_, err = getAuth()
 
 	assert.EqualError(t, err, "WARNING: GITHUB_TOKEN environment variable not set. API requests to github will be rate limited")
 
+	// put it back the way it was
 	err = os.Setenv("GITHUB_TOKEN", originalToken)
 	assert.Nil(t, err)
 
 }
 
 func TestGetStars(t *testing.T) {
+	// Test error handling for our calls to github. May become flaky. Could be mocked.
+
 	var r Repo
 	r.Name = "rdelpret/cartographer"
 	stars, err := GetStars(r)
@@ -70,6 +77,8 @@ func TestGetStars(t *testing.T) {
 }
 
 func TestGetStarsForRepos(t *testing.T) {
+
+	// test getting multiple repos. May become flaky. Could be mocked.
 
 	repos := Repos{Repos: []Repo{
 		{Name: "rdelpret/kfx"},
@@ -190,6 +199,7 @@ func TestStarsHandler(t *testing.T) {
 }
 
 func TestHealthCheckHandler(t *testing.T) {
+
 	// test happy path
 	recorder := httptest.NewRecorder()
 	handler := http.HandlerFunc(healthCheckHandler)
