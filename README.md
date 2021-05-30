@@ -1,7 +1,7 @@
 # rainbow-road
-Rainbow road is a server and client pair that will get the star count for an arbitrary amount of GitHub repos and return them to the client. The server can also be used as an API.
+Rainbow road is a server and client pair that will get the star count for an arbitrary amount of GitHub Repos and return them to the client. The server can also be used as an API.
 
-To run the project, first build and run the server using either go binaries, docker image or a docker-desktop kubernetes cluster using [tilt](https://tilt.dev/). Then build and use the client to make requests to the server.
+To run the project, first build and run the server using either go binaries, docker image, or a docker-desktop Kubernetes cluster using [tilt](https://tilt.dev/). Then build and use the client to make requests to the server.
 
 ## Client
 ### Building and Running
@@ -14,7 +14,7 @@ Set the RAINBOW_ROAD_SERVER environment variable. Regardless of how you choose t
 export RAINBOW_ROAD_SERVER=http://localhost:9999
 ```
 ### Usage
-The stars command takes in a list of GitHub repos and returns the amount of times that repo has been stared.
+The stars command takes in a list of GitHub Repos and returns the number of times that repo has been starred.
 ```
 ➜  rainbow-road git:(main) ✗ ./stars kubernetes/kubernetes istio/istio puppetlabs/puppet
 REPO                                              STARS
@@ -26,7 +26,7 @@ puppetlabs/puppet                                 6172
 ➜  rainbow-road git:(main) ✗ ./stars
 Usage: stars <git-repo-1> <git-repo-2> ...
 ```
-Errors, on a per repo basis are passed to the client and shown in the stars column:
+Errors, on a per repo basis, are passed to the client and shown in the stars column:
 ```
 ➜  rainbow-road git:(main) ✗ ./stars kubernetes/kubernetes istio/itio
 REPO                                              STARS
@@ -41,7 +41,7 @@ Error: Invalid repo name istio. Hint: <org>/<repo-name>
   
 ## Server
 ### Building and Running
-If you have a GitHub token, set the GITHUB_TOKEN environment variable. Regardless of how you choose to run your server, this variable will be sourced from here. If you do not have a GitHub token, you can still use rainbow-road, but will be rate limited by GitHub and receive non deterministic results. 
+If you have a GitHub token, set the GITHUB_TOKEN environment variable. Regardless of how you choose to run your server, this variable will be sourced from here. If you do not have a GitHub token, you can still use rainbow-road but will be rate-limited by GitHub and receive nondeterministic results. 
 ```
 export GITHUB_TOKEN = <my github token>
 ```
@@ -85,10 +85,10 @@ Run the docker image with the following make command. This will load the GitHub 
 make run-docker
 ```
 #### Docker Desktop Kubernetes Cluster w/ Tilt
-Tilt is a tool used for local development on kubernetes that offers, hot reloading on file save among other things. Here we use it to create a local-dev kubernetes setup.
+Tilt is a tool used for local development on Kubernetes that offers, hot reloading on file saves among other things. Here we use it to create a local-dev Kubernetes setup.
 ##### Prerequisites: 
 
- - Ensure you have a working [docker desktop kubernetes cluster](https://docs.docker.com/desktop/kubernetes/)
+ - Ensure you have a working [Docker Desktop Kubernetes Cluster](https://docs.docker.com/desktop/kubernetes/)
  - Download and install [Tilt](https://docs.tilt.dev/install.html)
  
 Ensure you have set a GITHUB_TOKEN
@@ -106,7 +106,7 @@ v0.20.3, built 2021-05-14
 (t) to open legacy terminal mode (--legacy=true)
 (ctrl-c) to exit
 ```
-Press the (space bar) to open a web ui to get pod status, logs, build status etc. or press (t) to get a terminal ui.
+Press the (space bar) to open a web UI to get pod status, logs, build status, etc., or press (t) to get a terminal UI.
 
 To terminate the tilt session run:
 ```
@@ -129,4 +129,4 @@ make test-server // run server tests
 ### Metrics
 Prometheus style metrics are served via `/metrics`
 
-Currently there are standard go metrics and some http request metrics
+Currently, there are standard go metrics and some HTTP request metrics
