@@ -64,6 +64,11 @@ func GetStars(repo Repo) (int, error) {
 	// validate repo name and generate github api url
 	url, err := assembleURL(repo.Name)
 
+	// this is for testing so we can setup a mock http server
+	if serverURLOverride != "" {
+		url = serverURLOverride
+	}
+
 	if err != nil {
 		log.Println(err)
 		return -1, err
@@ -247,6 +252,7 @@ var githubApiReq200 = promauto.NewCounter(prometheus.CounterOpts{
 // ------------------------------ MAIN -------------------------------
 
 var gitToken, gitTokenErr = getAuth()
+var serverURLOverride string = ""
 
 func main() {
 

@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -11,6 +12,20 @@ import (
 
 	"github.com/stretchr/testify/assert"
 )
+
+func mockGithubAPI(output string, code int) func() {
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(code)
+		fmt.Fprintln(w, output)
+	}))
+
+	serverURLOverride = ts.URL
+
+	return func() {
+		serverURLOverride = ""
+	}
+}
 
 // Disable log output durring tests (nice for negetive tests)
 func TestMain(m *testing.M) {
@@ -58,7 +73,10 @@ func TestGetAuth(t *testing.T) {
 }
 
 func TestGetStars(t *testing.T) {
-	// Test error handling for our calls to github. May become flaky. Could be mocked.
+	// Test error handling for our calls to github.
+
+	close := mockGithubAPI(`{"stargazers_count" : 1}`, 200)
+	defer close()
 
 	var r Repo
 	r.Name = "rdelpret/cartographer"
@@ -70,15 +88,22 @@ func TestGetStars(t *testing.T) {
 	_, err = GetStars(r)
 	assert.EqualError(t, err, "Recieved invalid repo name: invalid")
 
+	mockGithubAPI(`{}`, 404)
+
 	r.Name = "lkajef023093i2sdfaj09cff/9dieadf09ejd92d23"
 	_, err = GetStars(r)
 	assert.EqualError(t, err, "Repo Not found: lkajef023093i2sdfaj09cff/9dieadf09ejd92d23")
+
+	serverURLOverride = ""
 
 }
 
 func TestGetStarsForRepos(t *testing.T) {
 
-	// test getting multiple repos. May become flaky. Could be mocked.
+	// test getting multiple repos
+
+	close := mockGithubAPI(`{"stargazers_count" : 1}`, 200)
+	defer close()
 
 	repos := Repos{Repos: []Repo{
 		{Name: "rdelpret/kfx"},
@@ -87,11 +112,12 @@ func TestGetStarsForRepos(t *testing.T) {
 	repos = GetStarsForRepos(repos)
 
 	expected := Repos{Repos: []Repo{
-		{Name: "rdelpret/kfx", Stars: 0, Error: "<nil>"},
+		{Name: "rdelpret/kfx", Stars: 1, Error: "<nil>"},
 		{Name: "rdelpret/cartographer-infra-test-repo", Stars: 1, Error: "<nil>"}}}
 
 	assert.Equal(t, expected, repos)
 
+	mockGithubAPI(`{}`, 404)
 	repos = Repos{Repos: []Repo{
 		{Name: "invalid"},
 		{Name: "lkajef023093i2sdfaj09cff/9dieadf09ejd92d23"}}}
@@ -103,7 +129,6 @@ func TestGetStarsForRepos(t *testing.T) {
 		{Name: "lkajef023093i2sdfaj09cff/9dieadf09ejd92d23", Stars: -1, Error: "Repo Not found: lkajef023093i2sdfaj09cff/9dieadf09ejd92d23"}}}
 
 	assert.Equal(t, expected, repos)
-
 	repos = Repos{Repos: []Repo{
 		{},
 		{}}}
@@ -119,6 +144,9 @@ func TestGetStarsForRepos(t *testing.T) {
 }
 
 func TestStarsHandler(t *testing.T) {
+
+	close := mockGithubAPI(`{"stargazers_count" : 1}`, 200)
+	defer close()
 
 	// test happy path
 	recorder := httptest.NewRecorder()

@@ -125,4 +125,6 @@ func TestRun(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, "Usage: stars <git-repo-1> <git-repo-2> ...\n", str)
 
+	serverURLOverride = ""
+
 }

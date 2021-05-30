@@ -124,3 +124,9 @@ make test // run all tests
 make test-client // run client tests
 make test-server // run server tests
 ```
+
+
+### Metrics
+Prometheus style metrics are served via `/metrics`
+
+Currently there are standard go metrics and some http request metrics
