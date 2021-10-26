@@ -1,9 +1,11 @@
-FROM golang:1.16.4-buster
+FROM golang:1.16.4-buster as builder
 RUN mkdir rainbow-road
 WORKDIR /rainbow-road
 COPY / .
 RUN go mod download
 RUN go mod verify
-RUN cd server && go install
+RUN make build
+FROM debian:buster
+COPY --from=builder /rainbow-road/rainbow-road-server .
 EXPOSE 9999
-CMD ["server"]
+CMD ["./rainbow-road-server"]
